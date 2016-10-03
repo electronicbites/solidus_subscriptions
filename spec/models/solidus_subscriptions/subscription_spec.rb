@@ -59,19 +59,60 @@ RSpec.describe SolidusSubscriptions::Subscription, type: :model do
   end
 
   describe '#next_actionable_date' do
+    before { Timecop.freeze(Date.parse("2016-10-05")) }
+    after { Timecop.return }
     subject { subscription.next_actionable_date }
 
     context "when the subscription is active" do
-      let(:expected_date) { Date.current + subscription.interval }
-      let(:subscription) do
-        build_stubbed(
-          :subscription,
-          :with_line_item,
-          actionable_date: Date.current
-        )
+      context "when there is no other subscription" do
+        let(:subscription) { create(:subscription, :with_line_item, actionable_date: Date.current) }
+        let(:expected_date) { Date.current + subscription.interval }
+        it { is_expected.to eq expected_date }
       end
 
-      it { is_expected.to eq expected_date }
+      context "when the other subscription has different units" do
+        let(:expected_date) { Date.current + subscription.interval }
+        let(:other_subscription) { create(:subscription, :with_line_item, user: subscription.user) }
+        it { is_expected.to eq expected_date }
+      end
+
+      context "when both subscriptions are weekly" do
+        context "when the existing subscription is in the future" do
+          let(:expected_date) { Date.parse("2016-10-10") }
+
+          let(:other_line_item) { create :subscription_line_item, interval_units: "week", interval_length: 1 }
+          let!(:other_subscription) do
+            create(:subscription, line_item: other_line_item, user: subscription.user, actionable_date: 5.days.from_now)
+          end
+
+          let(:line_item) { create :subscription_line_item, interval_units: "week", interval_length: 1 }
+          let(:subscription) { create(:subscription, line_item: line_item, actionable_date: 1.day.from_now) }
+
+          it { is_expected.to eq expected_date }
+        end
+
+        context "when the existing subscription is in the past" do
+          let(:expected_date) { Date.parse("2016-10-11") }
+
+          let(:other_line_item) { create :subscription_line_item, interval_units: "week", interval_length: 1 }
+          let!(:other_subscription) do
+            create(:subscription, line_item: other_line_item, user: subscription.user, actionable_date: 1.day.ago)
+          end
+
+          let(:line_item) { create :subscription_line_item, interval_units: "week", interval_length: 1 }
+          let(:subscription) { create(:subscription, line_item: line_item, actionable_date: 3.days.from_now) }
+
+          it { is_expected.to eq expected_date }
+        end
+      end
+
+      context "when both subscriptions are monthly" do
+        let(:expected_date) { Date.parse("2016-10-10") }
+        let(:other_subscription) do
+          create(:subscription, :with_line_item, user: subscription.user, actionable_date: 1.month.ago)
+        end
+        it { is_expected.to eq expected_date }
+      end
     end
 
     context "when the subscription is not active" do

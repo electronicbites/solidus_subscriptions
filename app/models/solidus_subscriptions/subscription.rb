@@ -96,7 +96,25 @@ module SolidusSubscriptions
     #   eligible to be processed.
     def next_actionable_date
       return nil unless active?
-      (actionable_date || Time.zone.now) + interval
+      proposed_date = (actionable_date || Time.zone.now) + interval
+
+      if s = user.subscriptions.select{ |s| s.line_item.interval_units == line_item.interval_units }.last
+        if s.line_item.interval_units == "month"
+          Date.new(proposed_date.year, proposed_date.month, s.actionable_date.day)
+        elsif s.line_item.interval_units == "week"
+          if s.actionable_date < proposed_date.to_date
+            (proposed_date.to_date.cwday - s.actionable_date.cwday).
+              days.
+              ago(proposed_date)
+          else
+            (s.actionable_date.cwday - proposed_date.to_date.cwday).
+              days.
+              from_now(s.actionable_date)
+          end
+        end
+      else
+        proposed_date
+      end
     end
 
     # Advance the actionable date to the next_actionable_date value. Will modify
