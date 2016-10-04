@@ -73,6 +73,7 @@ RSpec.describe SolidusSubscriptions::Subscription, type: :model do
       context "when the other subscription has different units" do
         let(:expected_date) { Date.current + subscription.interval }
         let(:other_subscription) { create(:subscription, :with_line_item, user: subscription.user) }
+        let(:subscription) { create :subscription, :with_line_item }
         it { is_expected.to eq expected_date }
       end
 
@@ -107,10 +108,11 @@ RSpec.describe SolidusSubscriptions::Subscription, type: :model do
       end
 
       context "when both subscriptions are monthly" do
-        let(:expected_date) { Date.parse("2016-10-10") }
+        let(:expected_date) { Date.current }
         let(:other_subscription) do
           create(:subscription, :with_line_item, user: subscription.user, actionable_date: 1.month.ago)
         end
+        let(:subscription) { create :subscription, :with_line_item }
         it { is_expected.to eq expected_date }
       end
     end

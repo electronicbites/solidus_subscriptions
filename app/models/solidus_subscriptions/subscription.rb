@@ -98,7 +98,7 @@ module SolidusSubscriptions
       return nil unless active?
       proposed_date = (actionable_date || Time.zone.now) + interval
 
-      if s = user.subscriptions.select{ |s| s.line_item.interval_units == line_item.interval_units }.last
+      if s = user.subscriptions.actionable.select{ |us| us.line_item.interval_units == line_item.interval_units }.last
         if s.line_item.interval_units == "month"
           Date.new(proposed_date.year, proposed_date.month, s.actionable_date.day)
         elsif s.line_item.interval_units == "week"
