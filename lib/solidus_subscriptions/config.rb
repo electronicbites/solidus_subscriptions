@@ -82,7 +82,12 @@ module SolidusSubscriptions
 
       # SolidusSubscriptions::Subscription attributes which are allowed to
       # be updated from user data
-      mattr_accessor(:subscription_attributes) { [:actionable_date] }
+      mattr_accessor(:subscription_attributes) do
+        [
+          :actionable_date,
+          shipping_address_attributes: Spree::PermittedAttributes.address_attributes
+        ]
+      end
 
       def default_gateway(&block)
         return @gateway.call unless block_given?
