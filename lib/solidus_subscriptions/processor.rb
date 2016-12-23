@@ -1,6 +1,7 @@
 # This class is responsible for finding subscriptions and installments
 # which need to be processed. It will group them together by user and attempts
-# to process them together.
+# to process them together. Subscriptions will also be grouped by their
+# shiping address id.
 #
 # This class passes the reponsibility of actually creating the order off onto
 # the consolidated installment class.
@@ -55,7 +56,13 @@ module SolidusSubscriptions
     # Create `ProcessInstallmentsJob`s for the users used to initalize the
     # instance
     def build_jobs
-      users.map { |user| ProcessInstallmentsJob.perform_later installments(user) }
+      users.map do |user|
+        installemts_by_address_and_user = installments(user).group_by { |i| i.subscription.shipping_address_id }
+
+        installemts_by_address_and_user.values.each do |grouped_installments|
+          ProcessInstallmentsJob.perform_later grouped_installments
+        end
+      end
     end
 
     private

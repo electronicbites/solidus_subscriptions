@@ -269,7 +269,6 @@ RSpec.describe SolidusSubscriptions::ConsolidatedInstallment do
       end
 
       it 'ships to the subscription address' do
-        binding.pry
         expect(subject.ship_address).to eq shipping_address
       end
     end
