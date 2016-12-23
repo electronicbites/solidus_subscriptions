@@ -10,9 +10,15 @@ module SolidusSubscriptions
     # @return [Array<SolidusSubscriptions::Subscription>]
     def self.activate(subscription_line_items)
       subscription_line_items.map do |subscription_line_item|
-        user = subscription_line_item.order.user
+        order = subscription_line_item.order
 
-        Subscription.create!(user: user, line_item: subscription_line_item) do |sub|
+        subscription_attributes = {
+          user: order.user,
+          line_item: subscription_line_item,
+          shipping_address: order.ship_address
+        }
+
+        Subscription.create!(subscription_attributes) do |sub|
           sub.actionable_date = sub.next_actionable_date
         end
       end
