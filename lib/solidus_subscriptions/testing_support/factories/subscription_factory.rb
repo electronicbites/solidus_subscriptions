@@ -13,6 +13,10 @@ FactoryGirl.define do
       line_item { build :subscription_line_item, *line_item_traits }
     end
 
+    trait :with_address do
+      association :shipping_address, factory: :address
+    end
+
     trait :actionable do
       with_line_item
       actionable_date { Time.zone.now.yesterday }

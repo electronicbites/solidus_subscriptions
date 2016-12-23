@@ -117,7 +117,7 @@ module SolidusSubscriptions
     end
 
     def ship_address
-      user.ship_address || root_order.ship_address
+      subscription.shipping_address || user.ship_address || root_order.ship_address
     end
 
     def active_card

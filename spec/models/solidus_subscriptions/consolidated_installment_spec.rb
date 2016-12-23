@@ -4,8 +4,10 @@ RSpec.describe SolidusSubscriptions::ConsolidatedInstallment do
   let(:consolidated_installment) { described_class.new(installments) }
   let(:root_order) { create :completed_order_with_pending_payment }
   let(:subscription_user) { create :user }
-  let(:installments) do
-    traits = {
+  let(:installments) { create_list(:installment, 2, installment_traits) }
+
+  let(:installment_traits) do
+    {
       subscription_traits: [{
         user: subscription_user,
         line_item_traits: [{
@@ -13,8 +15,6 @@ RSpec.describe SolidusSubscriptions::ConsolidatedInstallment do
         }]
       }]
     }
-
-    create_list(:installment, 2, traits)
   end
 
   context 'initialized with installments belonging to multiple users' do
@@ -252,6 +252,25 @@ RSpec.describe SolidusSubscriptions::ConsolidatedInstallment do
 
       it 'has a valid store credit payment' do
         expect(order.payments.valid.store_credits).to be_present
+      end
+    end
+
+    context 'the subscription has a shipping address' do
+      it_behaves_like 'a completed checkout'
+      let(:shipping_address) { create :address }
+      let(:installment_traits) do
+        {
+          subscription_traits: [{
+            shipping_address: shipping_address,
+            user: subscription_user,
+            line_item_traits: [{ spree_line_item: root_order.line_items.first }]
+          }]
+        }
+      end
+
+      it 'ships to the subscription address' do
+        binding.pry
+        expect(subject.ship_address).to eq shipping_address
       end
     end
   end
