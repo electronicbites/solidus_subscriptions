@@ -20,7 +20,7 @@ module SolidusSubscriptions
     # SolidusSubscriptions::LineItem
     #
     # :interval, :quantity, :subscribable_id, :end_date
-    delegate :interval, :quantity, :subscribable_id, :end_date, to: :line_item
+    delegate :interval, :quantity, :subscribable_id, :end_date, :start_date, to: :line_item
 
     # Find all subscriptions that are "actionable"; that is, ones that have an
     # actionable_date in the past and are not invalid or canceled.
@@ -143,7 +143,8 @@ module SolidusSubscriptions
     # should not be processed again. Subscriptions without an end_date
     # value cannot be deactivated.
     def can_be_deactivated?
-      active? && line_item.end_date && actionable_date > line_item.end_date
+      active? && (line_item.end_date && actionable_date > line_item.end_date ||
+      (line_item.start_date && actionable_date < line_item.start_date)
     end
 
     # Get the date after the current actionable_date where this subscription

@@ -81,7 +81,8 @@ module SolidusSubscriptions
         :subscribable_id,
         :interval_length,
         :interval_units,
-        :end_date
+        :end_date,
+        :start_date
       ]
     end
 
