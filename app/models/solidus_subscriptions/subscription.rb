@@ -144,7 +144,7 @@ module SolidusSubscriptions
     # value cannot be deactivated.
     def can_be_deactivated?
       active? && (line_item.end_date && actionable_date > line_item.end_date ||
-      (line_item.start_date && actionable_date < line_item.start_date)
+      line_item.start_date && actionable_date < line_item.start_date)
     end
 
     # Get the date after the current actionable_date where this subscription
