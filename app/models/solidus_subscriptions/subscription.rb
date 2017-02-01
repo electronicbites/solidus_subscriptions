@@ -189,6 +189,10 @@ module SolidusSubscriptions
       installments.last.fulfilled? ? 'success' : 'failed'
     end
 
+    def line_item
+      line_items.first
+    end
+
     private
 
     def check_successive_skips_exceeded
@@ -205,10 +209,6 @@ module SolidusSubscriptions
       if skip_count >= Config.maximum_total_skips
         errors.add(:skip_count, :exceeded)
       end
-    end
-
-    def line_item
-      line_items.first
     end
   end
 end
