@@ -16,7 +16,7 @@ module SolidusSubscriptions
         batched_users_to_be_processed.each { |batch| new(batch).build_jobs }
       end
 
-      private
+      # private
 
       def batched_users_to_be_processed
         subscriptions = SolidusSubscriptions::Subscription.arel_table
@@ -67,7 +67,7 @@ module SolidusSubscriptions
       end
     end
 
-    private
+    # private
 
     def subscriptions_by_id
       @subscriptions_by_id ||= Subscription.
