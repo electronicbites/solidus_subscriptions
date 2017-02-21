@@ -121,11 +121,16 @@ module SolidusSubscriptions
     end
 
     def create_payment
+      orig_payment = authorized_payment_for_subscription
       order.payments.create(
-        source: active_card,
+        source: orig_payment.source,
         amount: order.total,
-        payment_method: Config.default_gateway
+        payment_method_id: orig_payment.payment_method_id
       )
+    end
+
+    def authorized_payment_for_subscription
+      user.orders.where(state: 'complete').first.payments.first
     end
 
     def apply_promotions
