@@ -14,6 +14,7 @@ module SolidusSubscriptions
      def perform(installment_ids)
        return if installment_ids.empty?
 
+       Rails.logger.debug "ProcessInstallmentsJob #{installment_ids}"
        installments = SolidusSubscriptions::Installment.where(id: installment_ids).
          includes(subscription: [:line_items, :user])
        Checkout.new(installments).process

@@ -57,6 +57,7 @@ module SolidusSubscriptions
     # instance
     def build_jobs
       users.map do |user|
+        Rails.logger.debug "build_jobs: user id #{user.id}"
         installemts_by_address_and_user = installments(user).group_by do |i|
           i.subscription.shipping_address_id
         end
@@ -70,7 +71,7 @@ module SolidusSubscriptions
     # private
 
     def subscriptions_by_id
-      @subscriptions_by_id ||= Subscription.
+      @subscriptions_by_id ||= SolidusSubscriptions::Subscription.
         actionable.
         includes(:line_items, :user).
         where(user_id: user_ids).
@@ -92,6 +93,7 @@ module SolidusSubscriptions
     def new_installments(user)
       ActiveRecord::Base.transaction do
         subscriptions_by_id.fetch(user.id, []).map do |sub|
+          Rails.logger.debug "new_installments: sub with id #{sub.id}"
           sub.successive_skip_count = 0
           sub.advance_actionable_date
           sub.cancel! if sub.pending_cancellation?
