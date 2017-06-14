@@ -73,6 +73,7 @@ module SolidusSubscriptions
       order.next! # cart => address
 
       order.ship_address = ship_address
+      order.bill_address = ship_address
       order.next! # address => payment
 
       create_payment
