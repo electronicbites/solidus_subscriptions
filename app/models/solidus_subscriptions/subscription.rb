@@ -155,9 +155,14 @@ module SolidusSubscriptions
     #   eligible to be processed.
     def next_actionable_date
       return nil unless active?
-      new_date = (actionable_date || Time.zone.now)
+      new_date = (actionable_date || first_possible_actionable_date)
       (new_date + interval).beginning_of_minute
     end
+
+    def first_possible_actionable_date
+      line_items.first.try(:start_date) || Time.zone.now
+    end
+
 
     # Advance the actionable date to the next_actionable_date value. Will modify
     # the record.
