@@ -24,7 +24,6 @@ module SolidusSubscriptions
     #
     # @return [Spree::Order]
     def process
-      Rails.logger.debug "Checkout"
       populate
 
       # Installments are removed and set for future processing if they are
@@ -63,18 +62,17 @@ module SolidusSubscriptions
       )
     end
 
-    # private
+    private
 
     def checkout
-      Rails.logger.debug "Checkout.checkout start for Order, id: #{order.id}"
       order.update_totals
       apply_promotions
 
       order.next! # cart => address
 
       order.ship_address = ship_address
-      order.bill_address = ship_address
-      order.next! # address => payment
+      order.next! # address => delivery
+      order.next! # delivery => payment
 
       create_payment
       order.next! # payment => confirm
@@ -82,7 +80,6 @@ module SolidusSubscriptions
       # Do this as a separate "quiet" transition so that it returns true or
       # false rather than raising a failed transition error
       order.complete
-      Rails.logger.debug "Checkout.checkout order.complete"
     end
 
     def populate
@@ -124,17 +121,11 @@ module SolidusSubscriptions
     end
 
     def create_payment
-      Rails.logger.debug "Checkout.create_payment for Order, id: #{order.id}"
-      orig_payment = authorized_payment_for_subscription
       order.payments.create(
-        source: orig_payment.source,
+        source: active_card,
         amount: order.total,
-        payment_method_id: orig_payment.payment_method_id
+        payment_method: Config.default_gateway
       )
-    end
-
-    def authorized_payment_for_subscription
-      user.orders.where(state: 'complete').first.payments.first
     end
 
     def apply_promotions
